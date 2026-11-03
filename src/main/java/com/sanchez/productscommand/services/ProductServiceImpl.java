@@ -2,6 +2,7 @@ package com.sanchez.productscommand.services;
 
 import com.sanchez.productscommand.entities.Product;
 import com.sanchez.productscommand.models.dto.ProductDto;
+import com.sanchez.productscommand.models.mappers.Mappers;
 import com.sanchez.productscommand.repositories.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +19,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductDto create(ProductDto productDto) {
-        Product product = new Product(productDto.name(), productDto.price());
-        Product productNew = this.productRepository.save(product);
-        return new ProductDto(productNew.getName(), productNew.getPrice());
+
+        //return Mappers.toProductDto(productNew); opcion 2
+        return Mappers.toProductDto(this.productRepository.save(Mappers.toProductEntity(productDto)));//opcion 1
     }
 }
