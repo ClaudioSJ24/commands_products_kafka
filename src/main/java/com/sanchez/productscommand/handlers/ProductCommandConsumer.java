@@ -32,7 +32,7 @@ public class ProductCommandConsumer {
 
             Command<ProductDto>  command = message.getPayload();
             String type = command.type() == null ? "" : command.type().toUpperCase();
-            Reply<ProductDto> reply;
+            Reply<?> reply;
             switch (type) {
                 case "CREATE" -> {
                     if (command.body() == null) {
@@ -44,15 +44,57 @@ public class ProductCommandConsumer {
                     logger.info("product created name={},price={}", productSave.name(), productSave.price());
                     reply = new Reply<>("SUCCESS", "Product created", productSave);
                 }
-//                case "UPDATE" -> {
-//
-//                }
-//                case "DELETE" -> {
-//
-//                }
-//                case "FIND_ALL" -> {
-//
-//                }
+                case "READ" -> {
+                    if (command.id()== null) {
+                        logger.warn("command.idis is null");
+                        reply = new Reply<>("Error", "Id is empty", null);
+                    }
+                    ProductDto productDto = this.productService.getById(command.id());
+                    if (productDto.id() == null) {
+                        logger.warn("product id is null");
+                        reply = new Reply<>("Error", "Id is empty", null);
+                    }
+                    logger.info("product read name={},price={}", productDto.name(), productDto.price());
+                    reply = new Reply<>("SUCCESS", "Product read", productDto);
+
+                }
+                case "READ_ALL" -> {
+                    reply = new Reply<>("SUCCESS", "Find all products", this.productService.getAll());
+                    logger.info("product find all products");
+
+                }
+                case "UPDATE" -> {
+                    if (command.body() == null || command.id() == null) {
+                        logger.warn("Id and body is null");
+                        reply = new Reply<>("Error", "Id and body is empty", null);
+                    }else {
+                        ProductDto productDto = this.productService.update(command.id(), command.body());
+                        if (productDto == null) {
+                            reply = new Reply<>("Error", "Product not found", null);
+                        } else {
+                            reply = new Reply<>("SUCCESS", "Update product", productDto);
+                            logger.info("Update product name={}, price={}", productDto.name(), productDto.price());
+                        }
+                    }
+
+               }
+                case "DELETE" -> {
+                    if (command.id() == null) {
+                        logger.warn("Id is empty");
+                        reply = new Reply<>("Error", "Id is empty", null);
+
+                    }
+                    boolean result = this.productService.deleteById(command.id());
+                    if (!result) {
+                        reply = new Reply<>("Error", "Product not found", null);
+                        logger.info("Product not found");
+                    }else {
+                        reply = new Reply<>("SUCCESS", "Product deleted", result);
+                        logger.info("product delete product");
+                    }
+
+                }
+
                 default ->
                         {
                             logger.warn("Invalid command type={}", type);
