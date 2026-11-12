@@ -1,4 +1,10 @@
 package com.sanchez.productscommand.models;
 
-public class CommandType {
+public enum CommandType {
+
+    CREATE,
+    UPDATE,
+    READ,
+    READ_ALL,
+    DELETE
 }
